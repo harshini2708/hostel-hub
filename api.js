@@ -1,9 +1,20 @@
 /**
  * HostelHub - Frontend API Client Layer
  * Handles communication with the FastAPI backend and JWT session management.
+ * Automatically switches between localhost (during development) and cloud backend.
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const isLocal = Boolean(
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.protocol === 'file:'
+);
+
+// When deployed, you can customize the backend URL in localStorage, or use the default Render deployment URL
+const DEFAULT_CLOUD_API = 'https://hostelhub-api.onrender.com/api';
+const API_BASE_URL = isLocal 
+  ? 'http://localhost:8000/api' 
+  : (localStorage.getItem('hostelhub_api_url') || DEFAULT_CLOUD_API);
 
 const api = {
   // Authentication token management
