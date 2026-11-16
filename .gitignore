@@ -1,0 +1,25 @@
+# Environment variables & secrets
+.env
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Local databases
+*.db
+*.sqlite3
+hostelhub_local.db
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

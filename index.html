@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HostelHub — Smart Hostel Management</title>
+<style>
+  :root{
+    --bg:#FAF6EC;
+    --paper:#FFFDF8;
+    --ink:#2A2318;
+    --ink-soft:#7a7060;
+    --mustard:#D9A62E;
+    --mustard-deep:#A97A12;
+    --mustard-tint:#FBEFCF;
+    --teal:#2F5D50;
+    --teal-tint:#E3EEE9;
+    --berry:#B23A48;
+    --berry-tint:#F6E4E4;
+    --line:#E6DDC6;
+    --radius-card: 3px;
+    --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'URW Palladio L', Palatino, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:transparent;}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:460px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:28px;}
+
+  /* ---------- Header ---------- */
+  header{
+    padding:20px 18px 0 18px;
+    display:flex;justify-content:space-between;align-items:flex-start;
+  }
+  .brand h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:26px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .brand p{margin:2px 0 0 0;font-size:12.5px;color:var(--ink-soft);}
+  .role-toggle{
+    display:flex;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:3px;flex-shrink:0;
+  }
+  .role-toggle button{
+    border:none;background:transparent;font-family:var(--font-body);font-size:11.5px;font-weight:600;
+    padding:6px 10px;border-radius:16px;cursor:pointer;color:var(--ink-soft);
+  }
+  .role-toggle button.active{background:var(--ink);color:var(--paper);}
+
+  /* ---------- User Banner ---------- */
+  .user-bar{
+    display:flex;justify-content:space-between;align-items:center;padding:8px 18px;
+    background:rgba(23,75,85,0.08);border-bottom:1px solid var(--line);font-size:12px;
+  }
+  .user-badge{display:flex;align-items:center;gap:6px;font-weight:600;}
+  .user-badge .role-tag{
+    font-size:10px;text-transform:uppercase;background:var(--teal);color:#fff;
+    padding:2px 7px;border-radius:8px;letter-spacing:0.04em;
+  }
+  .logout-btn{
+    background:none;border:none;color:var(--berry);font-size:11.5px;font-weight:700;cursor:pointer;text-decoration:underline;
+  }
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{
+    display:flex;gap:4px;overflow-x:auto;padding:16px 14px 10px 14px;
+    scrollbar-width:none;
+  }
+  nav.tabs::-webkit-scrollbar{display:none;}
+  nav.tabs button{
+    flex:0 0 auto;
+    font-family:var(--font-body);font-size:13px;font-weight:600;
+    padding:8px 13px;border-radius:18px;border:1px solid var(--line);
+    background:var(--paper);color:var(--ink-soft);cursor:pointer;white-space:nowrap;
+  }
+  nav.tabs button.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+
+  main{padding:6px 16px 30px 16px;}
+
+  h2.section-title{
+    font-family:var(--font-display);font-weight:600;font-size:19px;margin:14px 0 3px 0;
+  }
+  p.section-sub{margin:0 0 14px 0;font-size:13px;color:var(--ink-soft);line-height:1.5;}
+
+  /* ---------- Generic card ---------- */
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .card + .card{margin-top:0;}
+
+  /* ---------- Menu module ---------- */
+  .menu-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 0;border-bottom:1px dashed var(--line);
+  }
+  .menu-row:last-child{border-bottom:none;}
+  .menu-info .day-tag{
+    font-size:10.5px;font-weight:600;color:var(--teal);background:var(--teal-tint);
+    padding:2px 7px;border-radius:9px;display:inline-block;margin-bottom:5px;
+  }
+  .menu-info .dish{font-family:var(--font-display);font-size:16.5px;font-weight:500;}
+  .vote-track{width:100px;height:5px;background:var(--line);border-radius:3px;margin-top:7px;overflow:hidden;}
+  .vote-fill{height:100%;background:var(--mustard);}
+  .vote-count{font-size:11px;color:var(--ink-soft);margin-top:4px;}
+  .vote-btn{
+    flex-shrink:0;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--mustard-deep);
+    background:var(--paper);color:var(--mustard-deep);font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-weight:700;
+  }
+  .vote-btn.voted{background:var(--mustard);color:#fff;border-color:var(--mustard);}
+  .final-pick{
+    background:var(--teal);color:#fff;border-radius:var(--radius-card);padding:14px;margin-bottom:14px;
+  }
+  .final-pick .label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;opacity:.8;}
+  .final-pick .dish{font-family:var(--font-display);font-size:20px;font-weight:600;margin-top:3px;}
+  .lock-btn{
+    width:100%;padding:11px;background:var(--ink);color:var(--paper);border:none;border-radius:6px;
+    font-family:var(--font-body);font-weight:600;font-size:13.5px;cursor:pointer;margin-top:6px;
+  }
+
+  /* ---------- Feedback module ---------- */
+  .chip-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .chip{
+    padding:7px 13px;border-radius:16px;border:1px solid var(--line);background:var(--paper);
+    font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+  }
+  .chip.active{background:var(--mustard-tint);border-color:var(--mustard);color:var(--mustard-deep);}
+  .stars{display:flex;gap:5px;margin-bottom:12px;}
+  .star{font-size:26px;cursor:pointer;color:var(--line);}
+  .star.filled{color:var(--mustard);}
+  textarea, input[type=text], input[type=email], input[type=password]{
+    width:100%;border:1px solid var(--line);border-radius:6px;padding:10px;
+    font-family:var(--font-body);font-size:13.5px;background:var(--bg);resize:vertical;color:var(--ink);
+  }
+  textarea{min-height:64px;margin-bottom:10px;}
+  .submit-btn{
+    padding:10px 18px;background:var(--teal);color:#fff;border:none;border-radius:6px;
+    font-family:var(--font-body);font-weight:600;font-size:13px;cursor:pointer;
+  }
+  .submit-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .feed-item{border-bottom:1px solid var(--line);padding:11px 0;}
+  .feed-item:last-child{border-bottom:none;}
+  .feed-top{display:flex;justify-content:space-between;align-items:center;}
+  .feed-meal{font-weight:600;font-size:13px;}
+  .feed-stars{color:var(--mustard);font-size:13px;letter-spacing:1px;}
+  .feed-comment{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.4;}
+  .tag-row{margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;}
+  .tag{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:9px;}
+  .tag.issue{background:var(--berry-tint);color:var(--berry);}
+  .tag.positive{background:var(--teal-tint);color:var(--teal);}
+
+  /* ---------- Complaints module ---------- */
+  select{
+    width:100%;border:1px solid var(--line);border-radius:6px;padding:10px;
+    font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:var(--ink);margin-bottom:10px;
+  }
+  .ai-hint{
+    font-size:11.5px;color:var(--teal);background:var(--teal-tint);padding:7px 10px;border-radius:6px;
+    margin-bottom:10px;display:none;
+  }
+  .cat-group-title{
+    font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--ink-soft);margin:18px 0 8px 0;display:flex;justify-content:space-between;
+  }
+  .complaint-card{
+    background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--berry);
+    border-radius:var(--radius-card);padding:11px 12px;margin-bottom:8px;
+  }
+  .complaint-card.resolved{border-left-color:var(--teal);opacity:.65;}
+  .complaint-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .complaint-desc{font-size:13px;line-height:1.4;flex:1;}
+  .priority{font-size:10px;font-weight:700;padding:2px 8px;border-radius:9px;white-space:nowrap;}
+  .priority.High{background:var(--berry-tint);color:var(--berry);}
+  .priority.Medium{background:var(--mustard-tint);color:var(--mustard-deep);}
+  .priority.Low{background:var(--teal-tint);color:var(--teal);}
+  .resolve-btn{
+    margin-top:8px;font-size:11.5px;font-weight:600;background:none;border:1px solid var(--line);
+    border-radius:14px;padding:4px 10px;cursor:pointer;color:var(--ink-soft);
+  }
+  .resolve-btn.done{border-color:var(--teal);color:var(--teal);}
+  .complaint-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 14px}
+  .complaint-filter{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;color:var(--ink-soft);font:600 12px var(--font-body)}
+  .complaint-filter .count{display:block;font:600 20px var(--font-display);margin-bottom:2px;color:var(--ink)}
+  .complaint-filter.active{border-color:var(--teal);background:var(--teal-tint);color:var(--teal)}
+  .complaint-filter.active .count{color:var(--teal)}
+  .dash-welcome{background:linear-gradient(135deg,#173f36,#2f5d50);color:white;padding:18px;border-radius:14px;margin-bottom:14px}
+  .dash-welcome h2{font:600 23px var(--font-display);margin:0 0 5px}
+  .dash-welcome p{font-size:12.5px;line-height:1.5;margin:0;color:#e3eee9}
+
+  /* ---------- Polls module ---------- */
+  .poll-card{margin-bottom:14px;}
+  .poll-q{font-family:var(--font-display);font-size:16px;font-weight:500;margin-bottom:10px;}
+  .poll-option{
+    border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:7px;cursor:pointer;
+    position:relative;overflow:hidden;
+  }
+  .poll-option .fill{
+    position:absolute;top:0;left:0;bottom:0;background:var(--mustard-tint);z-index:0;
+  }
+  .poll-option .opt-label{position:relative;z-index:1;display:flex;justify-content:space-between;font-size:13px;font-weight:500;}
+  .new-poll-form input{margin-bottom:8px;}
+
+  /* ---------- Suggestions module ---------- */
+  .sugg-group{margin-bottom:10px;}
+  .sugg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .sugg-head .tagname{font-weight:600;font-size:13.5px;}
+  .sugg-head .count{font-size:11px;color:var(--ink-soft);}
+  .sugg-item{font-size:12.5px;color:var(--ink-soft);padding:6px 0;border-top:1px solid var(--line);line-height:1.4;}
+
+  /* ---------- Dashboard ---------- */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+  .stat-tile{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-card);padding:12px;}
+  .stat-tile .num{font-family:var(--font-display);font-size:22px;font-weight:600;}
+  .stat-tile .lbl{font-size:11px;color:var(--ink-soft);margin-top:2px;line-height:1.3;}
+  .insight-card{
+    background:var(--ink);color:var(--bg);border-radius:var(--radius-card);padding:14px;margin-bottom:14px;
+  }
+  .insight-card .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mustard);font-weight:700;}
+  .insight-card p{font-size:13px;line-height:1.55;margin:8px 0 0 0;}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .bar-row .bname{width:88px;font-size:11.5px;color:var(--ink-soft);flex-shrink:0;}
+  .bar-track{flex:1;height:9px;background:var(--bg);border-radius:5px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--teal);}
+  .bar-row .bval{width:20px;font-size:11.5px;text-align:right;flex-shrink:0;}
+
+  .empty{font-size:12.5px;color:var(--ink-soft);padding:14px 0;text-align:center;}
+  .locked-note{font-size:12px;color:var(--ink-soft);text-align:center;padding:16px 0;}
+
+  /* Improved layout presentation */
+  #app{max-width:1120px;margin:22px auto;min-height:calc(100vh - 44px);background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;box-shadow:0 18px 55px rgba(15,23,42,.09);overflow:hidden;padding-bottom:20px}
+  body{background:#eef2f7;color:#172033}
+  header{padding:26px 28px 18px;background:linear-gradient(120deg,#102b46,#1d5b65);color:#fff;align-items:center}
+  .brand h1{font-family:var(--font-body);font-size:27px;font-weight:800;letter-spacing:-.8px}
+  .brand h1:before{content:'H';display:inline-grid;place-items:center;background:#b9f3dd;color:#104c47;border-radius:10px;width:34px;height:34px;font-size:19px;margin-right:10px}
+  .brand p{color:#c9dbe8;margin:5px 0 0 45px}
+  .role-toggle{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25)}
+  .role-toggle button{color:#e4edf5;padding:9px 14px;font-size:12px}
+  .role-toggle button.active{background:#b9f3dd;color:#123e43}
+  nav.tabs{padding:16px 24px 10px;background:#fff;border-bottom:1px solid #e5eaf0;gap:8px}
+  nav.tabs button{border-radius:10px;background:#f8fafc;border-color:#e2e8f0;color:#526174;padding:10px 14px;font-size:12.5px}
+  nav.tabs button.active{background:#153e56;border-color:#153e56;color:white}
+  main{padding:16px 26px 32px;max-width:1000px;margin:auto}
+  h2.section-title{font-family:var(--font-body);font-size:24px;font-weight:800;color:#162b40;margin:12px 0 5px}
+  p.section-sub{font-size:13px;color:#65758b;margin-bottom:18px}
+  .card,.stat-tile{border:1px solid #e2e8f0;border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(15,23,42,.035);padding:17px}
+  .stat-grid{gap:12px}.stat-tile .num{font-family:var(--font-body);font-weight:800;color:#183d53}
+  .menu-row{padding:15px 0}.menu-info .dish,.poll-q{font-family:var(--font-body);font-weight:700;color:#23364a}
+  .vote-btn{border-radius:12px;width:40px;height:40px}
+  .final-pick{border-radius:14px;background:linear-gradient(120deg,#174b55,#21776d)}
+  .submit-btn,.lock-btn{border-radius:9px;padding:11px 16px}
+  textarea,input[type=text],select{border-color:#d7e0ea;background:#f8fafc;border-radius:9px}
+  .complaint-card{border-radius:12px;border:1px solid #e2e8f0;border-left:4px solid #d94d5d;background:white}
+  .complaint-card.resolved{border-left-color:#299a77}
+  .insight-card{border-radius:14px;background:#15364d}
+  .poll-option{border-radius:9px;border-color:#dfe7ee}
+  .sugg-group{border-radius:12px}
+  .prototype-note{font-size:11px;color:#738399;text-align:center;padding:0 20px 12px}
+
+  /* ---------- Auth Modal ---------- */
+  .auth-backdrop{position:fixed;inset:0;background:rgba(10,25,42,.62);display:none;align-items:center;justify-content:center;padding:20px;z-index:9999;backdrop-filter:blur(5px)}
+  .auth-backdrop.show{display:flex}
+  .auth-modal{width:min(100%,410px);background:#fff;border-radius:18px;padding:25px;box-shadow:0 25px 80px rgba(0,0,0,.28)}
+  .auth-icon{width:46px;height:46px;border-radius:14px;background:#e3f7ef;color:#17644e;display:grid;place-items:center;font-size:22px;margin-bottom:14px}
+  .auth-modal h2{font-size:21px;margin:0 0 6px;color:#172f43}
+  .auth-modal p{font-size:13px;line-height:1.5;color:#68798a;margin:0 0 16px}
+  .auth-modal input{width:100%;padding:11px;border:1px solid #d7e0ea;border-radius:9px;font-size:13.5px;margin-bottom:10px;background:#f8fafc}
+  .auth-actions{display:flex;gap:8px;margin-top:10px}
+  .auth-actions button{flex:1;border:0;border-radius:9px;padding:11px;cursor:pointer;font-weight:700}
+  .auth-submit{background:#174b55;color:#fff}
+  .auth-cancel{background:#edf2f7;color:#435468}
+  .auth-error{display:none;color:#b42332;font-size:12px;margin:-2px 0 8px;font-weight:600}
+  .quick-demo-btn{
+    width:100%;margin-bottom:12px;padding:7px;border-radius:8px;border:1px dashed #21776d;
+    background:#e8f7f4;color:#174b55;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  @media(max-width:650px){
+    #app{margin:0;border-radius:0;min-height:100vh}
+    header{padding:20px 15px;gap:10px}
+    .brand h1{font-size:21px}
+    .brand p{margin-left:0}
+    .role-toggle button{padding:7px 9px}
+    nav.tabs{padding:12px 10px}
+    main{padding:12px 14px 25px}
+    .stat-grid{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <h1>HostelHub</h1>
+      <p>Smart hostel operations · Student voice to action</p>
+    </div>
+    <div class="role-toggle" id="roleToggle">
+      <button data-role="student" class="active">Student</button>
+      <button data-role="warden">🔒 Admin / Warden</button>
+    </div>
+  </header>
+
+  <div class="user-bar" id="userBar">
+    <div class="user-badge">
+      <span class="role-tag" id="userRoleBadge">Student</span>
+      <span id="userNameDisplay">Loading session...</span>
+    </div>
+    <div>
+      <button class="logout-btn" id="logoutBtn">Switch Account / Logout</button>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="menu" class="active">🍛 Menu</button>
+    <button data-tab="feedback">⭐ Feedback</button>
+    <button data-tab="complaints">📝 Complaints</button>
+    <button data-tab="polls">📊 Polls</button>
+    <button data-tab="suggestions">💡 Suggestions</button>
+    <button data-tab="dashboard">🤖 Dashboard</button>
+  </nav>
+
+  <main id="main">
+    <div class="empty">Loading HostelHub live modules...</div>
+  </main>
+  <div class="prototype-note">HostelHub Full-Stack Application · Connected to FastAPI & Supabase PostgreSQL</div>
+</div>
+
+<!-- ============ AUTHENTICATION MODAL ============ -->
+<div class="auth-backdrop" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="auth-modal">
+    <div class="auth-icon" id="authIcon">🔐</div>
+    <h2 id="authTitle">Sign In to HostelHub</h2>
+    <p id="authSub">Enter your hostel credentials to access your account.</p>
+
+    <button type="button" class="quick-demo-btn" id="quickDemoBtn">⚡ Quick Autofill Demo Credentials</button>
+
+    <form id="authForm">
+      <input id="authEmail" type="text" placeholder="Email (e.g. student@hostel.edu)" required />
+      <input id="authPassword" type="password" placeholder="Password" required />
+      
+      <!-- Registration extra fields (hidden by default) -->
+      <div id="registerFields" style="display:none">
+        <input id="authName" type="text" placeholder="Full name (e.g. Harshini)" />
+        <input id="authRoom" type="text" placeholder="Room number (e.g. Room 304)" />
+      </div>
+
+      <div class="auth-error" id="authError">Incorrect credentials. Please try again.</div>
+
+      <div class="auth-actions">
+        <button type="button" class="auth-cancel" id="cancelAuth">Cancel</button>
+        <button type="submit" class="auth-submit" id="submitAuthBtn">Sign in</button>
+      </div>
+      <div style="text-align:center;margin-top:12px;font-size:12px">
+        <span id="toggleAuthModeText">Don't have an account?</span> 
+        <a href="#" id="toggleAuthMode" style="color:var(--teal);font-weight:700">Create one</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Include REST API Connector -->
+<script src="api.js"></script>
+
+<script>
+/* ============ LOCAL VIEW STATE ============ */
+const state = {
+  role: 'student', // 'student' or 'warden'
+  tab: 'menu',
+  complaintFilter: 'unviewed',
+  currentUser: null,
+  menuLocked: false,
+  menuItems: [],
+  feedbackMeal: 'Lunch',
+  feedbackStars: 0,
+  feedback: [],
+  complaints: [],
+  polls: [],
+  suggestions: [],
+  dashboardData: null,
+  authTargetRole: 'student',
+  isRegistering: false
+};
+
+const KEYWORDS = {
+  Food: ['food','mess','meal','rice','curry','dal','veg','sabzi','taste'],
+  Water: ['water','tap','leak','supply','cooler'],
+  Electricity: ['electricity','power','light','fan','socket','wire','spark'],
+  WiFi: ['wifi','wi-fi','internet','network','router'],
+  Cleanliness: ['clean','dirty','trash','garbage','washroom','toilet','bathroom'],
+  Maintenance: ['door','window','furniture','bed','repair','broken','cupboard','lock'],
+};
+const URGENT_WORDS = ['urgent','emergency','no water','no power','not working','spark','fire','safety','broken lock'];
+const MINOR_WORDS = ['minor','small','sometimes','occasionally'];
+
+function guessCategory(text){
+  const t = text.toLowerCase();
+  for(const cat in KEYWORDS){
+    if(KEYWORDS[cat].some(k=>t.includes(k))) return cat;
+  }
+  return '';
+}
+function guessPriority(text){
+  const t = text.toLowerCase();
+  if(URGENT_WORDS.some(w=>t.includes(w))) return 'High';
+  if(MINOR_WORDS.some(w=>t.includes(w))) return 'Low';
+  return 'Medium';
+}
+
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============ DATA FETCHING FROM BACKEND ============ */
+async function loadTabData(){
+  try {
+    if(state.tab === 'menu'){
+      const res = await api.menu.get();
+      state.menuItems = res.menuItems || [];
+      state.menuLocked = res.menuLocked || false;
+    } else if(state.tab === 'feedback'){
+      state.feedback = await api.feedback.get();
+    } else if(state.tab === 'complaints'){
+      state.complaints = await api.complaints.get();
+    } else if(state.tab === 'polls'){
+      state.polls = await api.polls.get();
+    } else if(state.tab === 'suggestions'){
+      state.suggestions = await api.suggestions.get();
+    } else if(state.tab === 'dashboard' && state.role === 'warden'){
+      state.dashboardData = await api.dashboard.get();
+    }
+  } catch (err) {
+    console.error('Failed to load tab data:', err);
+  }
+  render();
+}
+
+/* ============ RENDER ROUTER ============ */
+function render(){
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===state.tab));
+  document.querySelectorAll('#roleToggle button').forEach(b=>b.classList.toggle('active', b.dataset.role===state.role));
+  
+  const dashTab = document.querySelector('#tabs button[data-tab="dashboard"]');
+  if(dashTab) {
+    dashTab.textContent = '📊 Admin Dashboard';
+    dashTab.style.display = state.role === 'warden' ? '' : 'none';
+  }
+  
+  if(state.role === 'student' && state.tab === 'dashboard') state.tab = 'menu';
+
+  // Update user banner
+  const u = state.currentUser;
+  const roleBadge = document.getElementById('userRoleBadge');
+  const nameDisplay = document.getElementById('userNameDisplay');
+  if(u){
+    roleBadge.textContent = u.role === 'warden' ? 'Warden' : 'Student';
+    roleBadge.style.background = u.role === 'warden' ? 'var(--berry)' : 'var(--teal)';
+    nameDisplay.textContent = `${u.name || u.email} ${u.room ? `(${u.room})` : ''}`;
+  } else {
+    nameDisplay.textContent = 'Not logged in';
+  }
+
+  const main = document.getElementById('main');
+  main.innerHTML = {
+    menu: renderMenu,
+    feedback: renderFeedback,
+    complaints: renderComplaints,
+    polls: renderPolls,
+    suggestions: renderSuggestions,
+    dashboard: renderDashboard,
+  }[state.tab]();
+
+  attachHandlers();
+}
+
+/* ============ MODULE 1: MENU ============ */
+function renderMenu(){
+  const maxVotes = Math.max(...state.menuItems.map(m=>m.votes), 1);
+  const winner = [...state.menuItems].sort((a,b)=>b.votes-a.votes)[0] || {dish:'No menu added yet'};
+  const isAdmin = state.role === 'warden';
+
+  let html = `<h2 class="section-title">${isAdmin?'Menu Management & Vote Results':'Weekly Menu & Voting'}</h2>
+  <p class="section-sub">${isAdmin?'Create the menu and review student votes. Admin cannot vote.':'Vote for the dishes you would like to see. Results are shown after you vote.'}</p>`;
+
+  if(isAdmin){
+    html += `<div class="card"><h3 style="margin:0 0 10px;font-size:15px">Create a menu item</h3>
+      <select id="menuDay">
+        <option value="Mon">Monday</option><option value="Tue">Tuesday</option>
+        <option value="Wed">Wednesday</option><option value="Thu">Thursday</option>
+        <option value="Fri">Friday</option><option value="Sat">Saturday</option><option value="Sun">Sunday</option>
+      </select>
+      <input type="text" id="menuDish" placeholder="Enter dish name" style="width:100%;margin-bottom:9px;border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--bg);font-size:13.5px" />
+      <button class="submit-btn" data-add-menu="1">＋ Add to menu</button>
+    </div>`;
+  }
+
+  if(state.menuLocked){
+    html += `<div class="final-pick"><div class="label">Final menu — locked by admin</div><div class="dish">${escapeHtml(winner.dish)}</div></div>`;
+  }
+
+  html += `<div class="card">`;
+  if(!state.menuItems.length) html += `<div class="empty">No menu items yet. Admin can add dishes here.</div>`;
+  
+  state.menuItems.forEach(m=>{
+    const pct = Math.round(m.votes / maxVotes * 100);
+    html += `<div class="menu-row">
+      <div class="menu-info">
+        <span class="day-tag">${escapeHtml(m.day)}</span>
+        <div class="dish">${escapeHtml(m.dish)}</div>
+        ${isAdmin || m.voted ? `<div class="vote-track"><div class="vote-fill" style="width:${pct}%"></div></div><div class="vote-count">${m.votes} student votes</div>` : `<div class="vote-count">Cast your vote to see results</div>`}
+      </div>
+      ${isAdmin ? `<span class="tag positive">Admin view</span>` : `<button class="vote-btn ${m.voted?'voted':''}" data-menu-vote="${m.id}" ${state.menuLocked?'disabled':''}>${m.voted?'✓':'+'}</button>`}
+    </div>`;
+  });
+  html += `</div>`;
+
+  if(isAdmin && !state.menuLocked && state.menuItems.length) {
+    html += `<button class="lock-btn" data-lock-menu="1">Publish / lock menu</button>`;
+  }
+  if(isAdmin && state.menuLocked) {
+    html += `<button class="lock-btn" data-unlock-menu="1">Reopen menu editing</button>`;
+  }
+  return html;
+}
+
+/* ============ MODULE 2: FEEDBACK ============ */
+function renderFeedback(){
+  let html = `<h2 class="section-title">Food Feedback</h2>
+  <p class="section-sub">Rate today's meal. Feedback is stored permanently and auto-scanned for quality, taste, and quantity issues.</p>
+  ${state.role==='student' ? `<div class="card">
+    <div class="chip-row">${['Breakfast','Lunch','Dinner'].map(m=>`<div class="chip ${state.feedbackMeal===m?'active':''}" data-meal="${m}">${m}</div>`).join('')}</div>
+    <div class="stars">${[1,2,3,4,5].map(n=>`<span class="star ${n<=state.feedbackStars?'filled':''}" data-star="${n}">★</span>`).join('')}</div>
+    <textarea id="feedbackComment" placeholder="Optional comment — e.g. taste, portion size, quality..."></textarea>
+    <button class="submit-btn" data-submit-feedback="1">Submit rating</button>
+  </div>` : `<div class="insight-card"><div class="lbl">Admin review</div><p>Review student ratings and comments below to improve future meals. Feedback is read-only in admin mode.</p></div>`}
+  <h2 class="section-title" style="font-size:15px;margin-top:22px;">${state.role==='warden'?'Student feedback':'Recent feedback'}</h2>
+  <div class="card">`;
+  
+  if(!state.feedback || state.feedback.length === 0){
+    html += `<div class="empty">No feedback submitted yet.</div>`;
+  } else {
+    state.feedback.forEach(f=>{
+      const tags = Array.isArray(f.tags) ? f.tags : [];
+      html += `<div class="feed-item">
+        <div class="feed-top"><span class="feed-meal">${escapeHtml(f.meal)}</span><span class="feed-stars">${'★'.repeat(f.stars)}${'☆'.repeat(5-f.stars)}</span></div>
+        ${f.comment?`<div class="feed-comment">${escapeHtml(f.comment)}</div>`:''}
+        <div class="tag-row">${tags.map(t=>`<span class="tag ${t==='positive'?'positive':'issue'}">${escapeHtml(t)}</span>`).join('')}</div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+  return html;
+}
+
+/* ============ MODULE 3: COMPLAINTS ============ */
+function renderComplaints(){
+  const isAdmin = state.role === 'warden';
+  let html = `<h2 class="section-title">${isAdmin?'Complaint Management':'My Complaints'}</h2>
+  <p class="section-sub">${isAdmin?'Track every hostel complaint by its current status.':'Only you can see the complaints submitted from your student account and their updates.'}</p>`;
+
+  if(!isAdmin){
+    const myComplaints = state.complaints;
+    const viewedCount = myComplaints.filter(c=>c.viewed && !c.resolved).length;
+    const resolvedCount = myComplaints.filter(c=>c.resolved).length;
+    const pendingCount = myComplaints.filter(c=>!c.viewed && !c.resolved).length;
+
+    html += `<div class="card"><strong style="font-size:13px">Submit a new complaint</strong>
+      <p class="section-sub" style="margin:5px 0 10px">Your complaint is private to your account and the warden.</p>
+      <textarea id="complaintText" placeholder="e.g. No water supply on the 3rd floor since morning" oninput="onComplaintInput()"></textarea>
+      <div class="ai-hint" id="aiHint"></div>
+      <select id="complaintCategorySelect">
+        <option value="">Category (auto-detected, editable)</option>
+        ${Object.keys(KEYWORDS).map(c=>`<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <button class="submit-btn" data-submit-complaint="1">Submit complaint</button>
+    </div>`;
+
+    html += `<div class="stat-grid">
+      <div class="stat-tile"><div class="num">${myComplaints.length}</div><div class="lbl">My complaints</div></div>
+      <div class="stat-tile"><div class="num">${viewedCount}</div><div class="lbl">Viewed by admin</div></div>
+      <div class="stat-tile"><div class="num">${resolvedCount}</div><div class="lbl">Resolved</div></div>
+      <div class="stat-tile"><div class="num">${pendingCount}</div><div class="lbl">Awaiting review</div></div>
+    </div>`;
+
+    if(!myComplaints.length){
+      html += `<div class="card empty">You haven't submitted any complaints yet. Your future complaints will appear here privately.</div>`;
+    }
+
+    myComplaints.forEach(c=>{
+      const statusText = c.resolved ? 'Resolved' : (c.viewed ? 'Admin viewed' : 'Submitted — awaiting review');
+      html += `<div class="complaint-card ${c.resolved?'resolved':''}">
+        <div class="complaint-top">
+          <div>
+            <div class="complaint-desc">${escapeHtml(c.desc || c.description)}</div>
+            <div class="feed-comment" style="margin-top:5px">${escapeHtml(c.category)} · ${escapeHtml(c.priority)} priority</div>
+          </div>
+          <span class="tag ${c.resolved?'positive':c.viewed?'':'issue'}">${statusText}</span>
+        </div>
+        ${c.viewed||c.resolved?`<div class="tag-row"><span class="tag positive">🔔 Admin update: ${c.resolved?'Your complaint has been marked resolved.':'The warden has viewed your complaint.'}</span></div>`:''}
+      </div>`;
+    });
+
+    html += `<div class="card"><strong style="font-size:13px">Complaint status guide</strong>
+      <p class="section-sub" style="margin:5px 0 0">Submitted = waiting for review. Admin viewed = the warden has acknowledged it. Resolved = the warden has fixed the issue.</p>
+    </div>`;
+    return html;
+  }
+
+  // Warden view
+  const all = state.complaints;
+  const unviewed = all.filter(c=>!c.viewed && !c.resolved);
+  const viewed = all.filter(c=>c.viewed && !c.resolved);
+  const resolved = all.filter(c=>c.resolved);
+
+  html += `<div class="stat-grid">
+    <div class="stat-tile"><div class="num">${all.length}</div><div class="lbl">Total complaints</div></div>
+    <div class="stat-tile"><div class="num">${unviewed.length}</div><div class="lbl">Need review</div></div>
+  </div>
+  <div class="complaint-filters">
+    <button class="complaint-filter ${state.complaintFilter==='unviewed'?'active':''}" data-complaint-filter="unviewed"><span class="count">${unviewed.length}</span>Unviewed</button>
+    <button class="complaint-filter ${state.complaintFilter==='viewed'?'active':''}" data-complaint-filter="viewed"><span class="count">${viewed.length}</span>Viewed</button>
+    <button class="complaint-filter ${state.complaintFilter==='resolved'?'active':''}" data-complaint-filter="resolved"><span class="count">${resolved.length}</span>Resolved</button>
+  </div>`;
+
+  const filtered = state.complaintFilter==='unviewed' ? unviewed : (state.complaintFilter==='viewed' ? viewed : resolved);
+  html += `<h2 class="section-title" style="font-size:16px;margin-top:8px">${state.complaintFilter==='unviewed'?'Unviewed complaints':state.complaintFilter==='viewed'?'Viewed · Awaiting resolution':'Resolved complaints'}</h2>`;
+
+  if(!filtered.length) html += `<div class="card empty">No ${state.complaintFilter} complaints. You're all caught up!</div>`;
+
+  filtered.forEach(c=>{
+    html += `<div class="complaint-card ${c.resolved?'resolved':''}">
+      <div class="complaint-top">
+        <div class="complaint-desc">
+          ${escapeHtml(c.desc || c.description)}
+          <div class="feed-comment" style="margin-top:5px">
+            ${escapeHtml(c.category)} · ${escapeHtml(c.priority)} priority · Submitted by ${escapeHtml(c.studentName || 'Student')} ${c.roomNumber ? `(${escapeHtml(c.roomNumber)})` : ''}
+          </div>
+        </div>
+        <span class="priority ${c.priority}">${escapeHtml(c.priority)}</span>
+      </div>
+      <div class="tag-row">
+        <span class="tag ${c.resolved?'positive':c.viewed?'':'issue'}">${c.resolved?'Resolved':c.viewed?'Admin viewed':'Unviewed'}</span>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
+        ${!c.viewed ? `<button class="resolve-btn" data-view-complaint="${c.id}">Mark as viewed</button>` : ''}
+        ${!c.resolved ? `<button class="resolve-btn" data-resolve="${c.id}">Mark resolved</button>` : `<button class="resolve-btn done" disabled>✓ Resolved</button>`}
+      </div>
+    </div>`;
+  });
+
+  return html;
+}
+
+function onComplaintInput(){
+  const text = document.getElementById('complaintText').value;
+  const hint = document.getElementById('aiHint');
+  const sel = document.getElementById('complaintCategorySelect');
+  if(!text || text.trim().length < 4){ hint.style.display='none'; return; }
+  const cat = guessCategory(text);
+  const pri = guessPriority(text);
+  if(cat){
+    hint.style.display='block';
+    hint.textContent = `AI suggests: ${cat} · ${pri} priority`;
+    sel.value = cat;
+  } else {
+    hint.style.display='block';
+    hint.textContent = `AI suggests: ${pri} priority (select a category below)`;
+  }
+}
+
+/* ============ MODULE 4: POLLS ============ */
+function renderPolls(){
+  let html = `<h2 class="section-title">Hostel Polls</h2>
+  <p class="section-sub">${state.role==='warden' ? 'Create a poll for students to vote on.' : 'Vote once — results appear right after. Single vote strictly enforced.'}</p>`;
+
+  if(state.role==='warden'){
+    html += `<div class="card new-poll-form">
+      <strong style="display:block;margin-bottom:8px">Create a new hostel poll</strong>
+      <input type="text" id="pollQ" placeholder="Poll question (e.g. Preferred snack for evening mess?)">
+      <input type="text" id="pollO1" placeholder="Option 1">
+      <input type="text" id="pollO2" placeholder="Option 2">
+      <input type="text" id="pollO3" placeholder="Option 3 (optional)">
+      <button class="submit-btn" data-create-poll="1">Create poll</button>
+    </div>`;
+  }
+
+  if(!state.polls || !state.polls.length){
+    html += `<div class="card empty">No active polls. Check back soon.</div>`;
+  }
+
+  state.polls.forEach(p=>{
+    const total = p.options.reduce((s,o)=>s+o.votes,0) || 1;
+    html += `<div class="card poll-card">
+      <div class="poll-q">${escapeHtml(p.q)}</div>
+      ${p.options.map(o=>{
+        const pct = Math.round(o.votes/total*100);
+        const showResult = p.userVoted || state.role==='warden';
+        return `<div class="poll-option" ${showResult ? '' : `data-vote-poll="${p.id}" data-vote-opt="${o.id}"`}>
+          ${showResult ? `<div class="fill" style="width:${pct}%"></div>` : ''}
+          <div class="opt-label"><span>${escapeHtml(o.label)}</span><span>${showResult ? pct+'%' : ''}</span></div>
+        </div>`;
+      }).join('')}
+      <div class="section-sub" style="margin:6px 0 0 0;">${p.options.reduce((s,o)=>s+o.votes,0)} vote${total===1?'':'s'} ${p.userVoted ? '· You voted' : ''}</div>
+    </div>`;
+  });
+  return html;
+}
+
+/* ============ MODULE 5: SUGGESTIONS ============ */
+function renderSuggestions(){
+  let html = `<h2 class="section-title">AI Suggestion Box</h2>
+  <p class="section-sub">Suggest an improvement. Backend AI groups similar suggestions so popular requests rise to the top.</p>
+  ${state.role==='student' ? `<div class="card">
+    <textarea id="suggestionText" placeholder="e.g. Add a water cooler near the mess entrance"></textarea>
+    <button class="submit-btn" data-submit-suggestion="1">Submit suggestion</button>
+  </div>` : `<div class="insight-card"><div class="lbl">Admin review</div><p>Review and group student suggestions to help prioritise hostel improvements.</p></div>`}`;
+
+  const groups = {};
+  state.suggestions.forEach(s=>{
+    const g = s.group_tag || 'General';
+    (groups[g] = groups[g]||[]).push(s.text);
+  });
+
+  const order = Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length);
+  if(!order.length){
+    html += `<div class="card empty">No suggestions submitted yet.</div>`;
+  }
+  order.forEach(g=>{
+    html += `<div class="card sugg-group">
+      <div class="sugg-head"><span class="tagname">${escapeHtml(g)}</span><span class="count">${groups[g].length} similar</span></div>
+      ${groups[g].map(t=>`<div class="sugg-item">${escapeHtml(t)}</div>`).join('')}
+    </div>`;
+  });
+  return html;
+}
+
+/* ============ MODULE 6: ADMIN DASHBOARD ============ */
+function renderDashboard(){
+  const d = state.dashboardData;
+  if(!d){
+    return `<div class="card empty">Loading analytics from backend...</div>`;
+  }
+
+  const catCounts = d.catCounts || {};
+  const maxCat = Math.max(...Object.values(catCounts), 1);
+  const suggCounts = d.suggCounts || {};
+  const maxSugg = Math.max(...Object.values(suggCounts), 1);
+
+  return `<h2 class="section-title">AI Admin Dashboard</h2>
+  <p class="section-sub">Hostel-wide patterns pulled from this week's food, complaints and suggestions.</p>
+
+  <div class="insight-card">
+    <div class="lbl">Weekly AI insight</div>
+    <p>${escapeHtml(d.aiInsight)}</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="num">${escapeHtml(d.topCat)}</div><div class="lbl">Most common complaint</div></div>
+    <div class="stat-tile"><div class="num">${d.unresolved}</div><div class="lbl">Unresolved complaints</div></div>
+    <div class="stat-tile"><div class="num">${escapeHtml(d.topFood ? d.topFood.dish : '—')}</div><div class="lbl" style="font-size:10.5px;">Most-voted food (${d.topFood ? d.topFood.votes : 0})</div></div>
+    <div class="stat-tile"><div class="num">${d.avgRating}</div><div class="lbl">Avg meal rating (/5)</div></div>
+  </div>
+
+  <h2 class="section-title" style="font-size:15px;">Complaints by category</h2>
+  <div class="card">
+    ${Object.keys(catCounts).length === 0 ? '<div class="empty">No complaints recorded yet.</div>' : 
+      Object.keys(catCounts).sort((a,b)=>catCounts[b]-catCounts[a]).map(c=>`
+      <div class="bar-row">
+        <div class="bname">${escapeHtml(c)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(catCounts[c]/maxCat*100)}%"></div></div>
+        <div class="bval">${catCounts[c]}</div>
+      </div>`).join('')}
+  </div>
+
+  <h2 class="section-title" style="font-size:15px;">Satisfaction trend (7 days)</h2>
+  <div class="card">
+    ${renderSparkline(d.trend || [3.8, 3.8, 3.8, 3.8, 3.8, 3.8, 3.8])}
+  </div>
+
+  <h2 class="section-title" style="font-size:15px;">Popular suggestions</h2>
+  <div class="card">
+    ${Object.keys(suggCounts).length === 0 ? '<div class="empty">No suggestions logged yet.</div>' : 
+      Object.keys(suggCounts).sort((a,b)=>suggCounts[b]-suggCounts[a]).map(g=>`
+      <div class="bar-row">
+        <div class="bname">${escapeHtml(g)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(suggCounts[g]/maxSugg*100)}%;background:var(--mustard);"></div></div>
+        <div class="bval">${suggCounts[g]}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderSparkline(values){
+  const w=380,h=70,pad=8;
+  const min=Math.min(...values), max=Math.max(...values);
+  const range = (max-min)||1;
+  const step = (w-pad*2)/(values.length-1);
+  const pts = values.map((v,i)=>{
+    const x = pad + i*step;
+    const y = h-pad - ((v-min)/range)*(h-pad*2);
+    return `${x},${y}`;
+  });
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Today'];
+  return `<svg viewBox="0 0 ${w} ${h+18}" width="100%">
+    <polyline points="${pts.join(' ')}" fill="none" stroke="#2F5D50" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p,i)=>`<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="3" fill="${i===pts.length-1?'#D9A62E':'#2F5D50'}"/>`).join('')}
+    ${days.map((d,i)=>`<text x="${pad+i*step}" y="${h+14}" font-size="9.5" fill="#7a7060" text-anchor="middle" font-family="-apple-system, sans-serif">${d}</text>`).join('')}
+  </svg>`;
+}
+
+/* ============ EVENT HANDLERS & API CALLS ============ */
+function attachHandlers(){
+  // Menu Voting (Prevent duplicates on backend)
+  document.querySelectorAll('[data-menu-vote]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = parseInt(btn.dataset.menuVote);
+      btn.disabled = true;
+      try {
+        await api.menu.vote(id);
+        await loadTabData();
+      } catch(err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+  });
+
+  const lockBtn = document.querySelector('[data-lock-menu]');
+  if(lockBtn) lockBtn.onclick = async ()=>{
+    await api.menu.lock();
+    await loadTabData();
+  };
+  const unlockBtn = document.querySelector('[data-unlock-menu]');
+  if(unlockBtn) unlockBtn.onclick = async ()=>{
+    await api.menu.unlock();
+    await loadTabData();
+  };
+
+  const addMenuBtn = document.querySelector('[data-add-menu]');
+  if(addMenuBtn) addMenuBtn.onclick = async ()=>{
+    const dish = document.getElementById('menuDish').value.trim();
+    const day = document.getElementById('menuDay').value;
+    if(!dish){ alert('Enter a dish name.'); return; }
+    try {
+      await api.menu.add(day, dish);
+      await loadTabData();
+    } catch(err) {
+      alert(err.message);
+    }
+  };
+
+  // Feedback Meal Chips & Star selection
+  document.querySelectorAll('[data-meal]').forEach(chip=>{
+    chip.onclick = ()=>{ state.feedbackMeal = chip.dataset.meal; render(); };
+  });
+  document.querySelectorAll('[data-star]').forEach(s=>{
+    s.onclick = ()=>{ state.feedbackStars = parseInt(s.dataset.star); render(); };
+  });
+
+  const fbBtn = document.querySelector('[data-submit-feedback]');
+  if(fbBtn) fbBtn.onclick = async ()=>{
+    if(state.feedbackStars===0){ alert('Please select a star rating.'); return; }
+    const comment = document.getElementById('feedbackComment').value.trim();
+    try {
+      fbBtn.disabled = true;
+      await api.feedback.submit(state.feedbackMeal, state.feedbackStars, comment);
+      state.feedbackStars = 0;
+      await loadTabData();
+    } catch(err) {
+      alert(err.message);
+    } finally {
+      fbBtn.disabled = false;
+    }
+  };
+
+  // Submit Complaint
+  const compBtn = document.querySelector('[data-submit-complaint]');
+  if(compBtn) compBtn.onclick = async ()=>{
+    const text = document.getElementById('complaintText').value.trim();
+    if(text.length < 4){ alert('Please describe the issue in at least 4 characters.'); return; }
+    const selCat = document.getElementById('complaintCategorySelect').value;
+    const category = selCat || guessCategory(text) || 'Maintenance';
+    const priority = guessPriority(text);
+    try {
+      compBtn.disabled = true;
+      await api.complaints.submit(category, text, priority);
+      await loadTabData();
+    } catch(err) {
+      alert(err.message);
+    } finally {
+      compBtn.disabled = false;
+    }
+  };
+
+  // Complaint Filters (Warden)
+  document.querySelectorAll('[data-complaint-filter]').forEach(btn=>{
+    btn.onclick = ()=>{ state.complaintFilter = btn.dataset.complaintFilter; render(); };
+  });
+
+  // Complaint Status Updates (Warden)
+  document.querySelectorAll('[data-view-complaint]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = parseInt(btn.dataset.viewComplaint);
+      btn.disabled = true;
+      try {
+        await api.complaints.markViewed(id);
+        await loadTabData();
+      } catch(err){ alert(err.message); }
+    };
+  });
+  document.querySelectorAll('[data-resolve]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = parseInt(btn.dataset.resolve);
+      btn.disabled = true;
+      try {
+        await api.complaints.markResolved(id);
+        await loadTabData();
+      } catch(err){ alert(err.message); }
+    };
+  });
+
+  // Poll Voting
+  document.querySelectorAll('[data-vote-poll]').forEach(opt=>{
+    opt.onclick = async ()=>{
+      const pid = parseInt(opt.dataset.votePoll);
+      const oid = parseInt(opt.dataset.voteOpt);
+      try {
+        await api.polls.vote(pid, oid);
+        await loadTabData();
+      } catch(err) {
+        alert(err.message);
+      }
+    };
+  });
+
+  // Create Poll (Warden)
+  const pollBtn = document.querySelector('[data-create-poll]');
+  if(pollBtn) pollBtn.onclick = async ()=>{
+    const q = document.getElementById('pollQ').value.trim();
+    const o1 = document.getElementById('pollO1').value.trim();
+    const o2 = document.getElementById('pollO2').value.trim();
+    const o3 = document.getElementById('pollO3').value.trim();
+    if(!q || !o1 || !o2){ alert('Enter a question and at least two options.'); return; }
+    const options = [o1, o2];
+    if(o3) options.push(o3);
+    try {
+      await api.polls.create(q, options);
+      await loadTabData();
+    } catch(err) {
+      alert(err.message);
+    }
+  };
+
+  // Submit Suggestion
+  const suggBtn = document.querySelector('[data-submit-suggestion]');
+  if(suggBtn) suggBtn.onclick = async ()=>{
+    const text = document.getElementById('suggestionText').value.trim();
+    if(text.length < 4){ alert('Please enter a suggestion.'); return; }
+    try {
+      suggBtn.disabled = true;
+      await api.suggestions.submit(text);
+      await loadTabData();
+    } catch(err) {
+      alert(err.message);
+    } finally {
+      suggBtn.disabled = false;
+    }
+  };
+}
+
+/* ============ TAB NAVIGATION ============ */
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  state.tab = btn.dataset.tab;
+  loadTabData();
+});
+
+/* ============ AUTHENTICATION MODAL LOGIC ============ */
+const authModal = document.getElementById('authModal');
+const authForm = document.getElementById('authForm');
+const authError = document.getElementById('authError');
+const toggleAuthMode = document.getElementById('toggleAuthMode');
+const toggleAuthModeText = document.getElementById('toggleAuthModeText');
+const registerFields = document.getElementById('registerFields');
+const submitAuthBtn = document.getElementById('submitAuthBtn');
+const quickDemoBtn = document.getElementById('quickDemoBtn');
+
+function openAuth(targetRole = 'student'){
+  state.authTargetRole = targetRole;
+  state.isRegistering = false;
+  registerFields.style.display = 'none';
+  toggleAuthMode.textContent = 'Create one';
+  toggleAuthModeText.textContent = "Don't have an account?";
+  submitAuthBtn.textContent = 'Sign in';
+
+  const isWarden = targetRole === 'warden';
+  document.getElementById('authIcon').textContent = isWarden ? '🔐' : '🎓';
+  document.getElementById('authTitle').textContent = isWarden ? 'Admin / Warden Login' : 'Student Login';
+  document.getElementById('authSub').textContent = isWarden ? 'Log in with your warden credentials to access the administrative dashboard.' : 'Sign in to access your complaints, menu voting and feedback.';
+  
+  // Setup quick fill button
+  quickDemoBtn.textContent = isWarden ? '⚡ Autofill Demo Warden (admin@hostel.edu)' : '⚡ Autofill Demo Student (student@hostel.edu)';
+
+  authError.style.display = 'none';
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+  authModal.classList.add('show');
+  setTimeout(()=>document.getElementById('authEmail').focus(), 50);
+}
+
+function closeAuth(){
+  authModal.classList.remove('show');
+}
+
+quickDemoBtn.addEventListener('click', ()=>{
+  if(state.authTargetRole === 'warden'){
+    document.getElementById('authEmail').value = 'admin@hostel.edu';
+    document.getElementById('authPassword').value = 'Hostel@123';
+  } else {
+    document.getElementById('authEmail').value = 'student@hostel.edu';
+    document.getElementById('authPassword').value = 'Student@123';
+  }
+  authError.style.display = 'none';
+});
+
+toggleAuthMode.addEventListener('click', (e)=>{
+  e.preventDefault();
+  state.isRegistering = !state.isRegistering;
+  registerFields.style.display = state.isRegistering ? 'block' : 'none';
+  submitAuthBtn.textContent = state.isRegistering ? 'Create account' : 'Sign in';
+  toggleAuthMode.textContent = state.isRegistering ? 'Sign in instead' : 'Create one';
+  toggleAuthModeText.textContent = state.isRegistering ? 'Already have an account?' : "Don't have an account?";
+});
+
+authForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+
+  try {
+    if(state.isRegistering){
+      const name = document.getElementById('authName').value.trim() || 'Hostel Student';
+      const room = document.getElementById('authRoom').value.trim() || 'Room 101';
+      await api.auth.register({
+        email,
+        password,
+        full_name: name,
+        room_number: room,
+        role: state.authTargetRole
+      });
+    } else {
+      await api.auth.login(email, password);
+    }
+
+    const me = api.getCurrentUser();
+    state.currentUser = me;
+    state.role = me.role;
+    closeAuth();
+    await loadTabData();
+  } catch(err) {
+    authError.style.display = 'block';
+    authError.textContent = err.message || 'Authentication failed.';
+  }
+});
+
+document.getElementById('cancelAuth').addEventListener('click', closeAuth);
+authModal.addEventListener('click', e=>{ if(e.target === authModal) closeAuth(); });
+
+// Role Toggle Button
+document.getElementById('roleToggle').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-role]');
+  if(!btn) return;
+  const targetRole = btn.dataset.role;
+
+  // Check if current logged-in user matches target role
+  if(state.currentUser && state.currentUser.role === targetRole){
+    state.role = targetRole;
+    loadTabData();
+    return;
+  }
+
+  // If role differs, prompt authentication
+  openAuth(targetRole);
+});
+
+// Logout Button
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  api.logout();
+  openAuth('student');
+});
+
+/* ============ INITIAL STARTUP ============ */
+async function initApp(){
+  let user = api.getCurrentUser();
+  const token = api.getToken();
+
+  if(token && user){
+    state.currentUser = user;
+    state.role = user.role;
+  } else {
+    // Convenient automatic demo login for seamless first impression
+    try {
+      const res = await api.auth.login('student@hostel.edu', 'Student@123');
+      state.currentUser = res.user;
+      state.role = res.user.role;
+    } catch {
+      // If server not yet running or credentials changed, open login modal
+      state.currentUser = null;
+    }
+  }
+
+  await loadTabData();
+}
+
+initApp();
+</script>
+</body>
+</html>
