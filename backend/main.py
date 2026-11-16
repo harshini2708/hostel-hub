@@ -1,5 +1,7 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from backend.config import settings
 from backend.routers import (
     auth_router,
@@ -10,6 +12,8 @@ from backend.routers import (
     suggestions_router,
     dashboard_router
 )
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 app = FastAPI(
     title="HostelHub API",
@@ -35,8 +39,17 @@ app.include_router(polls_router.router)
 app.include_router(suggestions_router.router)
 app.include_router(dashboard_router.router)
 
-@app.get("/")
-async def root():
+# Serve Frontend Directly from the Server
+@app.get("/", response_class=FileResponse)
+async def serve_frontend():
+    return FileResponse(BASE_DIR / "index.html")
+
+@app.get("/api.js", response_class=FileResponse)
+async def serve_api_js():
+    return FileResponse(BASE_DIR / "api.js")
+
+@app.get("/api/info")
+async def api_info():
     return {
         "app": "HostelHub API",
         "status": "online",
